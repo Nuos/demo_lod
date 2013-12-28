@@ -43,7 +43,7 @@ public:
     static void clean(OpenGLFunctions & gl);
 
 	/** filePaths should contain a questionmark '?' that is replaced
-		by cubemap extensions 'px', 'nx', 'py', etc. 
+		by cubemap extensions 'px', 'nx', 'py', etc.
 		e.g. "resources/starmap?.png" points to "resources/starmap_px.png" etc.
 	*/
 	static GLuint getOrCreateCube(
@@ -106,7 +106,7 @@ private:
 protected:
     static QMap<QString, QImage> s_imagesByFilePath;
 	static QMap<QString, GLuint> s_texturesByFilePath;
-    
+
     struct CubeFaceOfTexture
     {
         GLuint texture;

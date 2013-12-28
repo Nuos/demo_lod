@@ -4,6 +4,7 @@
 #include <QKeyEvent>
 #include <QVector4D>
 #include <QRectF>
+#include <QPointF>
 #include <QPolygonF>
 
 #include "Terrain.h"
@@ -51,8 +52,8 @@ bool Painter::initialize()
 {
     initializeOpenGLFunctions();
 
-    // Note: As always, feel free to change/modify parameters .. as long as its possible to 
-    // see the terrain and navigation basically works, everything is ok. 
+    // Note: As always, feel free to change/modify parameters .. as long as its possible to
+    // see the terrain and navigation basically works, everything is ok.
 
     glClearColor(1.f, 1.f, 1.f, 0.f);
 
@@ -69,7 +70,8 @@ bool Painter::initialize()
     // the Tree Canyon Terrain or the complete Terrain Pack. Feel free to modify/exchange the data and extends/scales/offsets.
 
     m_height = FileAssociatedTexture::getOrCreate2Dus16("data/tree_canyon_h.raw", 2048, 2048, *this, &m_heights);
-    m_yOffset = -1.f;
+//    m_yOffset = -1.f;
+    m_yOffset = -2.f;
     m_yScale  =  3.f;
 
     m_normals = FileAssociatedTexture::getOrCreate2D("data/tree_canyon_n.png", *this);
@@ -81,7 +83,7 @@ bool Painter::initialize()
     // Task_4_1 - ToDo Begin
 
     // Pick your maximum tree traversal depth/level (or recursion depth)
-    // This should limit the minimum extend of a single patch in respect to the terrain 
+    // This should limit the minimum extend of a single patch in respect to the terrain
     // and your approach (4x4 or 2x2 subdivisions)
     m_level = 2;
     // Pick a starting LOD for your patches (the enumeration still remains on 0, 1, and 2, but the
@@ -236,7 +238,7 @@ void Painter::paint(float timef)
     }
 }
 
-// returns the height of the terrain at x, z with respect to the vertical 
+// returns the height of the terrain at x, z with respect to the vertical
 // scale and offset used by the vertex shader and the terrains extend of 8.0
 
 float Painter::height(
@@ -257,7 +259,7 @@ void Painter::patchify()
 
     // Task_4_1 - ToDo Begin
 
-    // Here you should initiate the "patchification" 
+    // Here you should initiate the "patchification"
 
     // You can modify the signature of patchify as it pleases you.
     // This function is called whenever the camera changes.
@@ -273,8 +275,8 @@ bool Painter::cull(
 ,   const QVector4D & v2)
 {
     // Task_4_1 - ToDo Begin
-    
-    // This function should return true, if the tile specified by vertices v0, v1, and v2 
+
+    // This function should return true, if the tile specified by vertices v0, v1, and v2
     // is within the cameras view frustum.
 
     // Hint: you might try to use NDCs and transfer the incomming verticies appropriatelly.
@@ -293,9 +295,10 @@ void Painter::patchify(
 ,   const float z
 ,   const int level)
 {
+    float unitSize = extend/2;
     // Task_4_1 - ToDo Begin
 
-    // Use an ad-hoc or "static" approach where you decide to either 
+    // Use an ad-hoc or "static" approach where you decide to either
     // subdivide the terrain patch and continue with the resulting
     // children (2x2 or 4x4), or initiate a draw call of patch.
     // For the draw call the LODs for all four tiles are required.
@@ -318,7 +321,29 @@ void Painter::patchify(
     //    //    xLOD = 3;
     //    // ...
 
-    //    //m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, bLOD, rLOD, tLOD, lLOD);
+//        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, bLOD, rLOD, tLOD, lLOD);
+    for(float tx = -extend/2; tx < extend/2; tx += unitSize)
+    {
+        for(float tz = -extend/2; tz < extend/2; tz += unitSize)
+        {
+
+            QPointF cameraPosition = QPointF( camera()->eye().x(),  camera()->eye().z());
+            QRectF currentRect = QRectF(x + tx, z + tz, unitSize, unitSize);
+
+            if(currentRect.contains(cameraPosition))
+            {
+                qDebug()<<level;
+                if(level < 2)
+                    patchify(unitSize, x + tx + unitSize/4, z + tz + unitSize/4, level);
+                else
+                    patchify(unitSize, x + tx + unitSize/4, z + tz + unitSize/4, level);
+                return;
+            }
+            else
+                m_terrain->drawPatch(QVector3D(x + tx, 0.0, z + tz), unitSize, 1, 1, 1, 1);
+        }
+    }
+
     //}
 
     // Task_4_1 - ToDo End

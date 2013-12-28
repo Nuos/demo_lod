@@ -25,13 +25,13 @@ void main()
     // Task_4_2 - ToDo Begin
 
 		// Make your terrain look nice ;)
-		
+
 		// 1P for having Normal Mapping using the terrains
 		// Normal and the details maps normals.
-		
+
 		// 1P for having a detail map that blends in based
 		// on the fragments distance.
-		
+
 		// 1P for having atmospheric scattering (fake or real)
 		// -> use e.g., the gl_FragCoord.z for this
 
