@@ -37,7 +37,7 @@ Painter::Painter()
 , m_precission(1.f)
 , m_level(0)
 , m_debug(false)
-, m_maximumDetail(4)
+, m_maximumDetail(5)
 {
     setMode(PaintMode0);
 }
@@ -336,7 +336,7 @@ void Painter::patchify(
     QPointF cameraPosition = QPointF(camera()->eye().x(),  camera()->eye().z());
     QRectF currentRect = QRectF(A, length);
 
-    if(level < levelFromDistance(camera()->eye().y() - height(camera()->eye().x(), camera()->eye().z())))
+    if(level < levelFromDistance((camera()->eye() - QVector3D(C.x(), 0.0f, C.y())).length()))
     {
         QPointF dist = QPointF(extend/4, extend/4);
         QPointF CA = A + dist;
