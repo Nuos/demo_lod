@@ -5,6 +5,7 @@
 #include <QVector4D>
 #include <QRectF>
 #include <QPointF>
+#include <QSizeF>
 #include <QPolygonF>
 
 #include "Terrain.h"
@@ -295,25 +296,57 @@ void Painter::patchify(
 ,   const float z
 ,   const int level)
 {
-    if(level >= 2 || extend <= 1.0f)
+    if(level >= 5 || extend <= 0.1f)
     {
-        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, level, level, level, level);
+        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
         return;
     }
 
+//                                                <--extend-->
+//                                    A----------------D-----------------
+//                                    |                |                |
+//                                    |                |                |
+//                                    |                |                |
+//                                    |       CA       |       CD       |
+//                                    |                |                |
+//                                  e |                |                |e
+//                                  x |                |                |x
+//                                  t B----------------C(x|z)-----------|t
+//                                  e |                |                |e
+//                                  n |                |                |n
+//                                  d |                |                |d
+//                                    |       CB       |       CC       |
+//                                    |                |                |
+//                                    |                |                |
+//                                    |                |                |
+//                                    -----------------------------------
+//                                                <--extend-->
+
+    QPointF A =QPointF(x - extend/2, z - extend/2);
+    QPointF B =QPointF(x - extend/2, z);
+    QPointF C =QPointF(x, z);
+    QPointF D =QPointF(x, z - extend/2);
+
     qDebug()<<camera()->eye().x()<<" "<<camera()->eye().z()<<" - ("<<x<<" "<<z<<") - ("<<x + extend<<" "<<z + extend<<")";
+    QSizeF length = QSizeF(extend, extend);
     QPointF cameraPosition = QPointF(camera()->eye().x(),  camera()->eye().z());
-    QRectF currentRect = QRectF(x, z, extend, extend);
+    QRectF currentRect = QRectF(A, length);
     // Task_4_1 - ToDo Begin
     if(currentRect.contains(cameraPosition))
     {
-        patchify(extend/2, x - extend/4, z - extend/4, level+1);
-        patchify(extend/2, x, z - extend/4, level+1);
-        patchify(extend/2, x, z, level+1);
-        patchify(extend/2, x - extend/4, z, level+1);
+        QPointF dist = QPointF(extend/4, extend/4);
+        QPointF CA = A + dist;
+        QPointF CB = B + dist;
+        QPointF CC = C + dist;
+        QPointF CD = D + dist;
+
+        patchify(extend/2, CA, level+1);
+        patchify(extend/2, CB, level+1);
+        patchify(extend/2, CC, level+1);
+        patchify(extend/2, CD, level+1);
     }
     else
-        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, level, level, level, level);
+        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
     // Use an ad-hoc or "static" approach where you decide to either
     // subdivide the terrain patch and continue with the resulting
     // children (2x2 or 4x4), or initiate a draw call of patch.
@@ -343,6 +376,17 @@ void Painter::patchify(
     //}
 
     // Task_4_1 - ToDo End
+}
+
+
+void Painter::patchify(
+    float extend
+,   QPointF center
+,   int level)
+{
+    float x = static_cast<float>(center.x());
+    float z = static_cast<float>(center.y());
+    patchify(extend, x, z, level);
 }
 
 void Painter::paint_4_1(float timef)

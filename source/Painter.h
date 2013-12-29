@@ -22,7 +22,7 @@ public:
     virtual ~Painter();
 
     virtual bool initialize();
-    
+
     virtual void paint(float timef);
     virtual void resize(
         int width
@@ -49,14 +49,16 @@ protected:
         const QString & vertexShaderFileName
     ,   const QString & geometryShaderFileName
     ,   const QString & fragmentShaderFileName);
-
     void patchify();
     void patchify(
         float extend
     ,   float x
     ,   float z
     ,   int level);
-   
+    void patchify(
+        float extend
+    ,   QPointF center
+    ,   int level);
     float height(
         const float x
     ,   const float z) const;
