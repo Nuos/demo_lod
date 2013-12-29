@@ -301,6 +301,7 @@ void Painter::patchify(
         return;
     }
 
+    qDebug()<<camera()->eye().x()<<" "<<camera()->eye().z()<<" - ("<<x<<" "<<z<<") - ("<<x + extend<<" "<<z + extend<<")";
     QPointF cameraPosition = QPointF(camera()->eye().x(),  camera()->eye().z());
     QRectF currentRect = QRectF(x, z, extend, extend);
     // Task_4_1 - ToDo Begin
