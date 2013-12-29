@@ -62,7 +62,7 @@ protected:
     float height(
         const float x
     ,   const float z) const;
-
+    int levelFromDistance(float distance);
     bool cull(
         const QVector4D & v0
     ,   const QVector4D & v1
@@ -86,6 +86,7 @@ protected:
 
     float m_yScale;
     float m_yOffset;
+    int m_maximumDetail;
 
     GLuint m_height;
     GLuint m_normals;

@@ -37,6 +37,7 @@ Painter::Painter()
 , m_precission(1.f)
 , m_level(0)
 , m_debug(false)
+, m_maximumDetail(4)
 {
     setMode(PaintMode0);
 }
@@ -296,7 +297,8 @@ void Painter::patchify(
 ,   const float z
 ,   const int level)
 {
-    if(level >= 5 || extend <= 0.1f)
+    //exit condition for maximum detail
+    if(level > m_maximumDetail)
     {
         m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
         return;
@@ -327,12 +329,14 @@ void Painter::patchify(
     QPointF C =QPointF(x, z);
     QPointF D =QPointF(x, z - extend/2);
 
-    qDebug()<<camera()->eye().x()<<" "<<camera()->eye().z()<<" - ("<<x<<" "<<z<<") - ("<<x + extend<<" "<<z + extend<<")";
+//    qDebug()<<camera()->eye().x()<<" "<<camera()->eye().z()<<" - ("<<x<<" "<<z<<") - ("<<x + extend<<" "<<z + extend<<")";
+    qDebug()<<camera()->eye().y();
+    qDebug()<<levelFromDistance(camera()->eye().y() - height(camera()->eye().x(), camera()->eye().z()));
     QSizeF length = QSizeF(extend, extend);
     QPointF cameraPosition = QPointF(camera()->eye().x(),  camera()->eye().z());
     QRectF currentRect = QRectF(A, length);
-    // Task_4_1 - ToDo Begin
-    if(currentRect.contains(cameraPosition))
+
+    if(level < levelFromDistance(camera()->eye().y() - height(camera()->eye().x(), camera()->eye().z())))
     {
         QPointF dist = QPointF(extend/4, extend/4);
         QPointF CA = A + dist;
@@ -340,10 +344,10 @@ void Painter::patchify(
         QPointF CC = C + dist;
         QPointF CD = D + dist;
 
-        patchify(extend/2, CA, level+1);
-        patchify(extend/2, CB, level+1);
-        patchify(extend/2, CC, level+1);
-        patchify(extend/2, CD, level+1);
+        patchify(extend/2, CA, level + 1);
+        patchify(extend/2, CB, level + 1);
+        patchify(extend/2, CC, level + 1);
+        patchify(extend/2, CD, level + 1);
     }
     else
         m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
@@ -387,6 +391,15 @@ void Painter::patchify(
     float x = static_cast<float>(center.x());
     float z = static_cast<float>(center.y());
     patchify(extend, x, z, level);
+}
+
+int Painter::levelFromDistance(float distance)
+{
+    if(distance < 0)
+        return 0;
+    if(distance > m_maximumDetail)
+        return 0;
+    return m_maximumDetail - static_cast<int>(distance);
 }
 
 void Painter::paint_4_1(float timef)
