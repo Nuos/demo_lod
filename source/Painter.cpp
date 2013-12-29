@@ -296,8 +296,14 @@ void Painter::patchify(
 ,   const int level)
 {
     float unitSize = extend/2;
+    QPointF cameraPosition = QPointF(camera()->eye().x(),  camera()->eye().z());
+    QRectF currentRect = QRectF(x + tx, z + tz, unitSize, unitSize);
     // Task_4_1 - ToDo Begin
-
+    if(currentRect.contains(cameraPosition) || extend >= 0.5f)
+    {
+        m_terrain->drawPatch(QVector3D(x + tx, 0.0, z + tz), unitSize, level, level, level, level);
+        return;
+    }
     // Use an ad-hoc or "static" approach where you decide to either
     // subdivide the terrain patch and continue with the resulting
     // children (2x2 or 4x4), or initiate a draw call of patch.
@@ -326,22 +332,14 @@ void Painter::patchify(
     {
         for(float tz = -extend/2; tz < extend/2; tz += unitSize)
         {
-
-            QPointF cameraPosition = QPointF( camera()->eye().x(),  camera()->eye().z());
-            QRectF currentRect = QRectF(x + tx, z + tz, unitSize, unitSize);
-
-            if(currentRect.contains(cameraPosition))
-            {
                 qDebug()<<level;
                 if(level < 2)
                     patchify(unitSize, x + tx + unitSize/4, z + tz + unitSize/4, level);
                 else
                     patchify(unitSize, x + tx + unitSize/4, z + tz + unitSize/4, level);
                 return;
-            }
-            else
-                m_terrain->drawPatch(QVector3D(x + tx, 0.0, z + tz), unitSize, 1, 1, 1, 1);
         }
+
     }
 
     //}
