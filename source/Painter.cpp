@@ -1,5 +1,6 @@
 
 #include <cassert>
+#include <math.h>
 
 #include <QKeyEvent>
 #include <QVector4D>
@@ -341,6 +342,7 @@ void Painter::patchify(
     QRectF currentRect = QRectF(A, length);
 
     bool devide = false;
+    float distance;
 
     QVector<QPointF> points;
 
@@ -351,7 +353,8 @@ void Painter::patchify(
 
     for(int i = 0; i < points.size() && !devide; i++)
     {
-        devide = level < levelFromDistance((camera()->eye() - QVector3D(points[i].x(), 0.0f, points[i].y())).length());
+        distance = (camera()->eye() - QVector3D(points[i].x(), 0.0f, points[i].y())).length();
+        devide = level < levelFromDistance(distance);
     }
 
     if(devide)
@@ -382,7 +385,11 @@ void Painter::patchify(
             south = 0;
         else
             north = 0;
-        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
+        qDebug()<<distance<<" "<<levelFromDistance(distance)<<distance - (m_maximumDetail - level);
+        if(abs(distance - (8 - level)) < 0.1f)
+            m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
+        else
+            m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
     }
     // Use an ad-hoc or "static" approach where you decide to either
     // subdivide the terrain patch and continue with the resulting
