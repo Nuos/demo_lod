@@ -37,7 +37,7 @@ Painter::Painter()
 , m_precission(1.f)
 , m_level(0)
 , m_debug(false)
-, m_maximumDetail(5)
+, m_maximumDetail(6)
 {
     setMode(PaintMode0);
 }
@@ -304,39 +304,57 @@ void Painter::patchify(
         return;
     }
 
-//                                                <--extend-->
-//                                    A----------------D-----------------
-//                                    |                |                |
-//                                    |                |                |
-//                                    |                |                |
-//                                    |       CA       |       CD       |
-//                                    |                |                |
-//                                  e |                |                |e
-//                                  x |                |                |x
-//                                  t B----------------C(x|z)-----------|t
-//                                  e |                |                |e
-//                                  n |                |                |n
-//                                  d |                |                |d
-//                                    |       CB       |       CC       |
-//                                    |                |                |
-//                                    |                |                |
-//                                    |                |                |
-//                                    -----------------------------------
-//                                                <--extend-->
+//                                 x------>
+//                                z                <--extend-->
+//                                |    A----------------D----------------G
+//                                |    |                |                |
+//                                |    |                |                |
+//                                V    |                |                |
+//                                     |       CA       |       CD       |
+//                                     |                |                |
+//                                   e |                |                |e
+//                                   x |                |                |x
+//                                   t B----------------C(x|z)-----------|t
+//                                   e |                |                |e
+//                                   n |                |                |n
+//                                   d |                |                |d
+//                                     |       CB       |       CC       |
+//                                     |                |                |
+//                                     |                |                |
+//                                     |                |                |
+//                                     E---------------------------------F
+//                                                 <--extend-->
 
     QPointF A =QPointF(x - extend/2, z - extend/2);
     QPointF B =QPointF(x - extend/2, z);
     QPointF C =QPointF(x, z);
     QPointF D =QPointF(x, z - extend/2);
+    QPointF E =QPointF(x - extend/2, z + extend/2);
+    QPointF F =QPointF(x + extend/2, z + extend/2);
+    QPointF G =QPointF(x + extend/2, z - extend/2);
 
 //    qDebug()<<camera()->eye().x()<<" "<<camera()->eye().z()<<" - ("<<x<<" "<<z<<") - ("<<x + extend<<" "<<z + extend<<")";
-    qDebug()<<camera()->eye().y();
-    qDebug()<<levelFromDistance(camera()->eye().y() - height(camera()->eye().x(), camera()->eye().z()));
+//    qDebug()<<camera()->eye().y();
+//    qDebug()<<levelFromDistance(camera()->eye().y() - height(camera()->eye().x(), camera()->eye().z()));
     QSizeF length = QSizeF(extend, extend);
     QPointF cameraPosition = QPointF(camera()->eye().x(),  camera()->eye().z());
     QRectF currentRect = QRectF(A, length);
 
-    if(level < levelFromDistance((camera()->eye() - QVector3D(C.x(), 0.0f, C.y())).length()))
+    bool devide = false;
+
+    QVector<QPointF> points;
+
+    points.append(A);
+    points.append(E);
+    points.append(F);
+    points.append(G);
+
+    for(int i = 0; i < points.size() && !devide; i++)
+    {
+        devide = level < levelFromDistance((camera()->eye() - QVector3D(points[i].x(), 0.0f, points[i].y())).length());
+    }
+
+    if(devide)
     {
         QPointF dist = QPointF(extend/4, extend/4);
         QPointF CA = A + dist;
@@ -350,7 +368,23 @@ void Painter::patchify(
         patchify(extend/2, CD, level + 1);
     }
     else
-        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
+    {
+        int north = 1;
+        int east = 1;
+        int south = 1;
+        int west = 1;
+//        if((camera()->eye() - QVector3D(E.x(), 0.0f, E.y())).length() < (camera()->eye() - QVector3D(F.x(), 0.0f, F.y())).length())
+//            west = 0;
+//        else
+//            east = 0;
+//
+//        if((camera()->eye() - QVector3D(A.x(), 0.0f, A.y())).length() < (camera()->eye() - QVector3D(G.x(), 0.0f, G.y())).length())
+//            south = 0;
+//        else
+//            north = 0;
+//        qDebug()<<north<<" "<<east<<" "<<south<<" "<<west;
+        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
+    }
     // Use an ad-hoc or "static" approach where you decide to either
     // subdivide the terrain patch and continue with the resulting
     // children (2x2 or 4x4), or initiate a draw call of patch.
