@@ -373,16 +373,15 @@ void Painter::patchify(
         int east = 1;
         int south = 1;
         int west = 1;
-//        if((camera()->eye() - QVector3D(E.x(), 0.0f, E.y())).length() < (camera()->eye() - QVector3D(F.x(), 0.0f, F.y())).length())
-//            west = 0;
-//        else
-//            east = 0;
-//
-//        if((camera()->eye() - QVector3D(A.x(), 0.0f, A.y())).length() < (camera()->eye() - QVector3D(G.x(), 0.0f, G.y())).length())
-//            south = 0;
-//        else
-//            north = 0;
-//        qDebug()<<north<<" "<<east<<" "<<south<<" "<<west;
+        if((camera()->eye() - QVector3D(E.x(), 0.0f, E.y())).length() < (camera()->eye() - QVector3D(F.x(), 0.0f, F.y())).length())
+            west = 0;
+        else
+            east = 0;
+
+        if((camera()->eye() - QVector3D(A.x(), 0.0f, A.y())).length() < (camera()->eye() - QVector3D(E.x(), 0.0f, E.y())).length())
+            south = 0;
+        else
+            north = 0;
         m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
     }
     // Use an ad-hoc or "static" approach where you decide to either
