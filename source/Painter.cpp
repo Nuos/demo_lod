@@ -304,6 +304,8 @@ void Painter::patchify(
         m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
         return;
     }
+    if(!m_debug)
+        m_cameraPos = camera()->eye();
 
 //                                 x------>
 //                                z                <--extend-->
@@ -338,7 +340,7 @@ void Painter::patchify(
 //    qDebug()<<camera()->eye().y();
 //    qDebug()<<levelFromDistance(camera()->eye().y() - height(camera()->eye().x(), camera()->eye().z()));
     QSizeF length = QSizeF(extend, extend);
-    QPointF cameraPosition = QPointF(camera()->eye().x(),  camera()->eye().z());
+    QPointF cameraPosition = QPointF(m_cameraPos.x(),  m_cameraPos.z());
     QRectF currentRect = QRectF(A, length);
 
     bool devide = false;
@@ -353,7 +355,7 @@ void Painter::patchify(
 
     for(int i = 0; i < points.size() && !devide; i++)
     {
-        distance = (camera()->eye() - QVector3D(points[i].x(), 0.0f, points[i].y())).length();
+        distance = (m_cameraPos - QVector3D(points[i].x(), 0.0f, points[i].y())).length();
         devide = level < levelFromDistance(distance);
     }
 
@@ -376,19 +378,19 @@ void Painter::patchify(
         int east = 1;
         int south = 1;
         int west = 1;
-        if((camera()->eye() - QVector3D(E.x(), 0.0f, E.y())).length() < (camera()->eye() - QVector3D(F.x(), 0.0f, F.y())).length())
+        if((m_cameraPos - QVector3D(E.x(), 0.0f, E.y())).length() < (m_cameraPos - QVector3D(F.x(), 0.0f, F.y())).length())
             west = 0;
         else
             east = 0;
 
-        if((camera()->eye() - QVector3D(A.x(), 0.0f, A.y())).length() < (camera()->eye() - QVector3D(E.x(), 0.0f, E.y())).length())
+        if((m_cameraPos - QVector3D(A.x(), 0.0f, A.y())).length() < (m_cameraPos - QVector3D(E.x(), 0.0f, E.y())).length())
             south = 0;
         else
             north = 0;
 
         qDebug()<<"dist:\t"<<distance<<"\tlevelFromdist:\t"<<levelFromDistance(distance)<<"\tactual level:\t"<<level;
         qDebug()<<(distance - static_cast<int>(distance));
-        if(distance - static_cast<int>(distance) < 0.3f)
+        if(distance - static_cast<int>(distance) < 0.4f)
         {
             m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
         }

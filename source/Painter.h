@@ -100,4 +100,5 @@ protected:
     float m_precission;
     int m_level;
     QVector3D m_cachedEye;
+    QVector3D m_cameraPos;
 };
