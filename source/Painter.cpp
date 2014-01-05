@@ -1,6 +1,6 @@
 
 #include <cassert>
-#include <math.h>
+#include <cmath>
 
 #include <QKeyEvent>
 #include <QVector4D>
@@ -385,9 +385,13 @@ void Painter::patchify(
             south = 0;
         else
             north = 0;
-        qDebug()<<distance<<" "<<levelFromDistance(distance)<<distance - (m_maximumDetail - level);
-        if(abs(distance - (8 - level)) < 0.1f)
+
+        qDebug()<<"dist:\t"<<distance<<"\tlevelFromdist:\t"<<levelFromDistance(distance)<<"\tactual level:\t"<<level;
+        qDebug()<<(distance - static_cast<int>(distance));
+        if(distance - static_cast<int>(distance) < 0.3f)
+        {
             m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
+        }
         else
             m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
     }
