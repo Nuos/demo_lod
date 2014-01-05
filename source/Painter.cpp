@@ -305,7 +305,10 @@ void Painter::patchify(
         return;
     }
     if(!m_debug)
+    {
+        m_cameraPos.setX(m_cameraPos.x() - height(m_cameraPos.x(), m_cameraPos.z()));
         m_cameraPos = camera()->eye();
+    }
 
 //                                 x------>
 //                                z                <--extend-->
@@ -347,16 +350,19 @@ void Painter::patchify(
     float distance;
 
     QVector<QPointF> points;
+    int cornerCount = 0;
 
     points.append(A);
     points.append(E);
     points.append(F);
     points.append(G);
 
-    for(int i = 0; i < points.size() && !devide; i++)
+    for(int i = 0; i < points.size(); i++)
     {
         distance = (m_cameraPos - QVector3D(points[i].x(), 0.0f, points[i].y())).length();
-        devide = level < levelFromDistance(distance);
+        devide = level - 1 < levelFromDistance(distance);
+        if(devide)
+            cornerCount++;
     }
 
     if(devide)
@@ -390,7 +396,7 @@ void Painter::patchify(
 
         qDebug()<<"dist:\t"<<distance<<"\tlevelFromdist:\t"<<levelFromDistance(distance)<<"\tactual level:\t"<<level;
         qDebug()<<(distance - static_cast<int>(distance));
-        if(distance - static_cast<int>(distance) < 0.4f)
+        if(distance - static_cast<int>(distance) < 0.4f && cornerCount > 1)
         {
             m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
         }
