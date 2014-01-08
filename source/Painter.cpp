@@ -326,22 +326,26 @@ void Painter::drawPatch(float extend, float x, float z, int level)
     }
     else if(cornerCount == 2)
     {
-        int north = 1;
-        int east = 1;
-        int south = 1;
-        int west = 1;
+        int north = 0;
+        int east = 0;
+        int south = 0;
+        int west = 0;
+        bool reserved = false;
 
         if((m_cameraPos - QVector3D(E.x(), 0.0f, E.y())).length() < (m_cameraPos - QVector3D(F.x(), 0.0f, F.y())).length())
-    {
-
-}
+        {
+                west = 1;
+                reserved = true;
+        }
         else
-            east = 0;
-
-        if((m_cameraPos - QVector3D(A.x(), 0.0f, A.y())).length() < (m_cameraPos - QVector3D(E.x(), 0.0f, E.y())).length())
-            south = 0;
-        else
-            north = 0;
+        {
+                south = 1;
+                reserved = true;
+        }
+        if(!reserved && (m_cameraPos - QVector3D(A.x(), 0.0f, A.y())).length() < (m_cameraPos - QVector3D(E.x(), 0.0f, E.y())).length())
+            south = 1;
+        else if(!reserved)
+            north = 1;
 
         m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
     }
