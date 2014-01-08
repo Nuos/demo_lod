@@ -267,7 +267,7 @@ void Painter::patchify()
     // You can modify the signature of patchify as it pleases you.
     // This function is called whenever the camera changes.
 
-    patchify(8.f, 0.f, 0.f, 0, 0);
+    patchify(8.f, 0.f, 0.f, 0);
 
     // Task_4_1 - ToDo End
 }
@@ -292,17 +292,71 @@ bool Painter::cull(
     return false;
 }
 
+void Painter::drawPatch(float extend, float x, float z, int level)
+{
+    QPointF A =QPointF(x - extend/2, z - extend/2);
+    QPointF E =QPointF(x - extend/2, z + extend/2);
+    QPointF F =QPointF(x + extend/2, z + extend/2);
+    QPointF G =QPointF(x + extend/2, z - extend/2);
+
+    int cornerCount = 0;
+    float distance;
+    float distanceFromLevel = (level - m_maximumDetail)*-1;
+    QVector<QPointF> points;
+
+    points.append(A);
+    points.append(E);
+    points.append(F);
+    points.append(G);
+
+    for(int i = 0; i < points.size(); i++)
+    {
+        distance = (QVector2D(m_cameraPos.x(), m_cameraPos.z()) - QVector2D(points[i].x(), points[i].y())).length();
+
+        if(distance < distanceFromLevel + (std::sqrt(pow(extend, 2)*2)))
+        {
+            cornerCount++;
+        }
+    }
+
+
+    if(cornerCount == 4)
+    {
+        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
+    }
+    else if(cornerCount == 2)
+    {
+        int north = 1;
+        int east = 1;
+        int south = 1;
+        int west = 1;
+
+        if((m_cameraPos - QVector3D(E.x(), 0.0f, E.y())).length() < (m_cameraPos - QVector3D(F.x(), 0.0f, F.y())).length())
+    {
+
+}
+        else
+            east = 0;
+
+        if((m_cameraPos - QVector3D(A.x(), 0.0f, A.y())).length() < (m_cameraPos - QVector3D(E.x(), 0.0f, E.y())).length())
+            south = 0;
+        else
+            north = 0;
+
+        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
+    }
+}
+
 void Painter::patchify(
     const float extend
 ,   const float x
 ,   const float z
-,   const int level
-,   const int corners)
+,   const int level)
 {
     //exit condition for maximum detail
     if(level >= m_maximumDetail)
     {
-        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
+        drawPatch(extend, x, z, level);
         return;
     }
     if(!m_debug)
@@ -347,29 +401,23 @@ void Painter::patchify(
     QPointF cameraPosition = QPointF(m_cameraPos.x(),  m_cameraPos.z());
     QRectF currentRect = QRectF(A, length);
 
-    float distance = -1;
 
+//    int cornerCount = 0;
+    bool devide = false;
     QVector<QPointF> points;
-    int cornerCount = 0;
 
     points.append(A);
     points.append(E);
     points.append(F);
     points.append(G);
 
-    for(int i = 0; i < points.size(); i++)
+    for(int i = 0; i < points.size() && !devide; i++)
     {
-        float tempDistance = (QVector2D(m_cameraPos.x(), m_cameraPos.z()) - QVector2D(points[i].x(), points[i].y())).length()/extend;
-
-        if(level - 1 < levelFromDistance(tempDistance))
-        {
-            cornerCount++;
-            if(distance == -1 || distance < tempDistance)
-                distance = tempDistance;
-        }
+        if(level - 1 < levelFromDistance((QVector2D(m_cameraPos.x(), m_cameraPos.z()) - QVector2D(points[i].x(), points[i].y())).length()/extend))
+            devide = true;
     }
 
-    if(cornerCount > 0)
+    if(devide)
     {
         QPointF dist = QPointF(extend/4, extend/4);
         QPointF CA = A + dist;
@@ -377,37 +425,14 @@ void Painter::patchify(
         QPointF CC = C + dist;
         QPointF CD = D + dist;
 
-        patchify(extend/2, CA, level + 1, cornerCount);
-        patchify(extend/2, CB, level + 1, cornerCount);
-        patchify(extend/2, CC, level + 1, cornerCount);
-        patchify(extend/2, CD, level + 1, cornerCount);
+        patchify(extend/2, CA, level + 1);
+        patchify(extend/2, CB, level + 1);
+        patchify(extend/2, CC, level + 1);
+        patchify(extend/2, CD, level + 1);
     }
     else
     {
-        int north = 1;
-        int east = 1;
-        int south = 1;
-        int west = 1;
-        if((m_cameraPos - QVector3D(E.x(), 0.0f, E.y())).length() < (m_cameraPos - QVector3D(F.x(), 0.0f, F.y())).length())
-            west = 0;
-        else
-            east = 0;
-
-        if((m_cameraPos - QVector3D(A.x(), 0.0f, A.y())).length() < (m_cameraPos - QVector3D(E.x(), 0.0f, E.y())).length())
-            south = 0;
-        else
-            north = 0;
-
-        if(corners == 3)
-        {
-            m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
-        }
-        if(corners == 4)
-        {
-//            m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
-        }
-        else if(corners == 1 || corners == 2)
-            m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 0, 0, 0, 0);
+        drawPatch(extend, x, z, level);
     }
     // Use an ad-hoc or "static" approach where you decide to either
     // subdivide the terrain patch and continue with the resulting
@@ -444,19 +469,18 @@ void Painter::patchify(
 void Painter::patchify(
     float extend
 ,   QPointF center
-,   int level
-,   const int corners)
+,   int level)
 {
     float x = static_cast<float>(center.x());
     float z = static_cast<float>(center.y());
-    patchify(extend, x, z, level, corners);
+    patchify(extend, x, z, level);
 }
 
 int Painter::levelFromDistance(float distance)
 {
     if(distance > m_maximumDetail)
         return 0;
-    int level = std::round(m_maximumDetail - 2*distance);
+    int level = std::round(m_maximumDetail - distance );
 //    qDebug()<<distance<<" "<<level;
     return level;
 }
