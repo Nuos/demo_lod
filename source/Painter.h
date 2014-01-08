@@ -54,11 +54,13 @@ protected:
         float extend
     ,   float x
     ,   float z
-    ,   int level);
+    ,   int level
+    ,   const int corners);
     void patchify(
         float extend
     ,   QPointF center
-    ,   int level);
+    ,   int level
+    ,   const int corners);
     float height(
         const float x
     ,   const float z) const;

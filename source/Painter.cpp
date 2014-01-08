@@ -267,7 +267,7 @@ void Painter::patchify()
     // You can modify the signature of patchify as it pleases you.
     // This function is called whenever the camera changes.
 
-    patchify(8.f, 0.f, 0.f, 0);
+    patchify(8.f, 0.f, 0.f, 0, 0);
 
     // Task_4_1 - ToDo End
 }
@@ -296,18 +296,19 @@ void Painter::patchify(
     const float extend
 ,   const float x
 ,   const float z
-,   const int level)
+,   const int level
+,   const int corners)
 {
     //exit condition for maximum detail
-    if(level > m_maximumDetail)
+    if(level >= m_maximumDetail)
     {
         m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
         return;
     }
     if(!m_debug)
     {
-        m_cameraPos.setX(m_cameraPos.x() - height(m_cameraPos.x(), m_cameraPos.z()));
         m_cameraPos = camera()->eye();
+        m_cameraPos.setY(m_cameraPos.y() - height(m_cameraPos.x(), m_cameraPos.z()));
     }
 
 //                                 x------>
@@ -346,8 +347,7 @@ void Painter::patchify(
     QPointF cameraPosition = QPointF(m_cameraPos.x(),  m_cameraPos.z());
     QRectF currentRect = QRectF(A, length);
 
-    bool devide = false;
-    float distance;
+    float distance = -1;
 
     QVector<QPointF> points;
     int cornerCount = 0;
@@ -359,13 +359,17 @@ void Painter::patchify(
 
     for(int i = 0; i < points.size(); i++)
     {
-        distance = (m_cameraPos - QVector3D(points[i].x(), 0.0f, points[i].y())).length();
-        devide = level - 1 < levelFromDistance(distance);
-        if(devide)
+        float tempDistance = (QVector2D(m_cameraPos.x(), m_cameraPos.z()) - QVector2D(points[i].x(), points[i].y())).length()/extend;
+
+        if(level - 1 < levelFromDistance(tempDistance))
+        {
             cornerCount++;
+            if(distance == -1 || distance < tempDistance)
+                distance = tempDistance;
+        }
     }
 
-    if(devide)
+    if(cornerCount > 0)
     {
         QPointF dist = QPointF(extend/4, extend/4);
         QPointF CA = A + dist;
@@ -373,10 +377,10 @@ void Painter::patchify(
         QPointF CC = C + dist;
         QPointF CD = D + dist;
 
-        patchify(extend/2, CA, level + 1);
-        patchify(extend/2, CB, level + 1);
-        patchify(extend/2, CC, level + 1);
-        patchify(extend/2, CD, level + 1);
+        patchify(extend/2, CA, level + 1, cornerCount);
+        patchify(extend/2, CB, level + 1, cornerCount);
+        patchify(extend/2, CC, level + 1, cornerCount);
+        patchify(extend/2, CD, level + 1, cornerCount);
     }
     else
     {
@@ -394,14 +398,16 @@ void Painter::patchify(
         else
             north = 0;
 
-        qDebug()<<"dist:\t"<<distance<<"\tlevelFromdist:\t"<<levelFromDistance(distance)<<"\tactual level:\t"<<level;
-        qDebug()<<(distance - static_cast<int>(distance));
-        if(distance - static_cast<int>(distance) < 0.4f && cornerCount > 1)
+        if(corners == 3)
         {
             m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
         }
-        else
-            m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
+        if(corners == 4)
+        {
+//            m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
+        }
+        else if(corners == 1 || corners == 2)
+            m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 0, 0, 0, 0);
     }
     // Use an ad-hoc or "static" approach where you decide to either
     // subdivide the terrain patch and continue with the resulting
@@ -438,20 +444,21 @@ void Painter::patchify(
 void Painter::patchify(
     float extend
 ,   QPointF center
-,   int level)
+,   int level
+,   const int corners)
 {
     float x = static_cast<float>(center.x());
     float z = static_cast<float>(center.y());
-    patchify(extend, x, z, level);
+    patchify(extend, x, z, level, corners);
 }
 
 int Painter::levelFromDistance(float distance)
 {
-    if(distance < 0)
-        return 0;
     if(distance > m_maximumDetail)
         return 0;
-    return m_maximumDetail - static_cast<int>(distance);
+    int level = std::round(m_maximumDetail - 2*distance);
+//    qDebug()<<distance<<" "<<level;
+    return level;
 }
 
 void Painter::paint_4_1(float timef)
