@@ -194,7 +194,8 @@ void Painter::update(const QList<QOpenGLShaderProgram *> & programs)
             case PaintMode2:
             case PaintMode1:
 
-                if (!m_debug || camera()->eye() != m_cachedEye)
+//                if(!m_debug || camera()->eye() != m_cachedEye)
+                if(!m_debug)
                 {
                     m_cachedEye = camera()->eye();
                     patchify();
@@ -294,10 +295,10 @@ bool Painter::cull(
 
 void Painter::drawPatch(float extend, float x, float z, int level)
 {
-    QPointF A =QPointF(x - extend/2, z - extend/2);
-    QPointF E =QPointF(x - extend/2, z + extend/2);
-    QPointF F =QPointF(x + extend/2, z + extend/2);
-    QPointF G =QPointF(x + extend/2, z - extend/2);
+    QPointF A = QPointF(x - extend/2, z - extend/2);
+    QPointF E = QPointF(x - extend/2, z + extend/2);
+    QPointF F = QPointF(x + extend/2, z + extend/2);
+    QPointF G = QPointF(x + extend/2, z - extend/2);
 
     int cornerCount = 0;
     float distance;
@@ -311,7 +312,7 @@ void Painter::drawPatch(float extend, float x, float z, int level)
 
     for(int i = 0; i < points.size(); i++)
     {
-        distance = (QVector2D(m_cameraPos.x(), m_cameraPos.z()) - QVector2D(points[i].x(), points[i].y())).length();
+        distance = (QVector2D(m_cachedEye.x(), m_cachedEye.z()) - QVector2D(points[i].x(), points[i].y())).length();
 
         if(distance < distanceFromLevel + (std::sqrt(pow(extend, 2)*2)))
         {
@@ -320,11 +321,11 @@ void Painter::drawPatch(float extend, float x, float z, int level)
     }
 
 
-    if(cornerCount == 4)
+    if(cornerCount == 4 || cornerCount < 2)
     {
         m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
     }
-    else if(cornerCount == 2)
+    else if(cornerCount == 2 || cornerCount == 3)
     {
         int north = 0;
         int east = 0;
@@ -332,20 +333,23 @@ void Painter::drawPatch(float extend, float x, float z, int level)
         int west = 0;
         bool reserved = false;
 
-        if((m_cameraPos - QVector3D(E.x(), 0.0f, E.y())).length() < (m_cameraPos - QVector3D(F.x(), 0.0f, F.y())).length())
+        float xDistance = m_cachedEye.x() - x;
+        float zDistance = m_cachedEye.z() - z;
+
+        if(std::abs(xDistance) > std::abs(zDistance))
         {
-                west = 1;
-                reserved = true;
+                if(xDistance > 0)
+                    west = 1;
+                else
+                    east = 1;
         }
         else
         {
-                south = 1;
-                reserved = true;
+                if(zDistance > 0)
+                    south = 1;
+                else
+                    north = 1;
         }
-        if(!reserved && (m_cameraPos - QVector3D(A.x(), 0.0f, A.y())).length() < (m_cameraPos - QVector3D(E.x(), 0.0f, E.y())).length())
-            south = 1;
-        else if(!reserved)
-            north = 1;
 
         m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
     }
@@ -363,11 +367,11 @@ void Painter::patchify(
         drawPatch(extend, x, z, level);
         return;
     }
-    if(!m_debug)
-    {
-        m_cameraPos = camera()->eye();
-        m_cameraPos.setY(m_cameraPos.y() - height(m_cameraPos.x(), m_cameraPos.z()));
-    }
+//    if(!m_debug)
+//    {
+//        m_cachedEye = camera()->eye();
+//        m_cachedEye.setY(m_cachedEye.y() - height(m_cachedEye.x(), m_cachedEye.z()));
+//    }
 
 //                                 x------>
 //                                z                <--extend-->
@@ -402,7 +406,7 @@ void Painter::patchify(
 //    qDebug()<<camera()->eye().y();
 //    qDebug()<<levelFromDistance(camera()->eye().y() - height(camera()->eye().x(), camera()->eye().z()));
     QSizeF length = QSizeF(extend, extend);
-    QPointF cameraPosition = QPointF(m_cameraPos.x(),  m_cameraPos.z());
+    QPointF cameraPosition = QPointF(m_cachedEye.x(),  m_cachedEye.z());
     QRectF currentRect = QRectF(A, length);
 
 
@@ -417,7 +421,7 @@ void Painter::patchify(
 
     for(int i = 0; i < points.size() && !devide; i++)
     {
-        if(level - 1 < levelFromDistance((QVector2D(m_cameraPos.x(), m_cameraPos.z()) - QVector2D(points[i].x(), points[i].y())).length()/extend))
+        if(level - 1 < levelFromDistance((QVector2D(m_cachedEye.x(), m_cachedEye.z()) - QVector2D(points[i].x(), points[i].y())).length()/extend))
             devide = true;
     }
 
