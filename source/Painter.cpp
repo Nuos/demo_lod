@@ -194,8 +194,8 @@ void Painter::update(const QList<QOpenGLShaderProgram *> & programs)
             case PaintMode2:
             case PaintMode1:
 
-//                if(!m_debug || camera()->eye() != m_cachedEye)
-                if(!m_debug)
+                if(!m_debug || camera()->eye() != m_cachedEye)
+//                if(!m_debug)
                 {
                     m_cachedEye = camera()->eye();
                     patchify();
@@ -293,7 +293,7 @@ bool Painter::cull(
     return false;
 }
 
-void Painter::drawPatch(float extend, float x, float z, int level)
+void Painter::drawP(float extend, float x, float z, int level)
 {
     QPointF A = QPointF(x - extend/2, z - extend/2);
     QPointF E = QPointF(x - extend/2, z + extend/2);
@@ -314,18 +314,13 @@ void Painter::drawPatch(float extend, float x, float z, int level)
     {
         distance = (QVector2D(m_cachedEye.x(), m_cachedEye.z()) - QVector2D(points[i].x(), points[i].y())).length();
 
-        if(distance < distanceFromLevel + (std::sqrt(pow(extend, 2)*2)))
+        if(distance < distanceFromLevel + (std::sqrt(pow(extend, 2)*2.0)))
         {
             cornerCount++;
         }
     }
 
-
-    if(cornerCount == 4 || cornerCount < 2)
-    {
-        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
-    }
-    else if(cornerCount == 2 || cornerCount == 3)
+    if(cornerCount == 2 || cornerCount == 3)
     {
         int north = 0;
         int east = 0;
@@ -350,8 +345,19 @@ void Painter::drawPatch(float extend, float x, float z, int level)
                 else
                     north = 1;
         }
-
+        qDebug()<<north<<east<<south<<west;
         m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
+        return;
+    }
+    else if(cornerCount == 4)
+    {
+        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 1, 1, 1, 1);
+        return;
+    }
+    else if(cornerCount == 0 || cornerCount == 1)
+    {
+        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 0, 0, 0, 0);
+        return;
     }
 }
 
@@ -364,7 +370,7 @@ void Painter::patchify(
     //exit condition for maximum detail
     if(level >= m_maximumDetail)
     {
-        drawPatch(extend, x, z, level);
+        drawP(extend, x, z, level);
         return;
     }
 //    if(!m_debug)
@@ -440,7 +446,7 @@ void Painter::patchify(
     }
     else
     {
-        drawPatch(extend, x, z, level);
+        drawP(extend, x, z, level);
     }
     // Use an ad-hoc or "static" approach where you decide to either
     // subdivide the terrain patch and continue with the resulting

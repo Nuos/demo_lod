@@ -59,7 +59,7 @@ protected:
         float extend
     ,   QPointF center
     ,   int level);
-    void drawPatch(
+    void drawP(
         float extend
     ,   float x
     ,   float z
