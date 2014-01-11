@@ -194,8 +194,8 @@ void Painter::update(const QList<QOpenGLShaderProgram *> & programs)
             case PaintMode2:
             case PaintMode1:
 
-                if(!m_debug || camera()->eye() != m_cachedEye)
-//                if(!m_debug)
+//                if(!m_debug || camera()->eye() != m_cachedEye)
+                if(!m_debug)
                 {
                     m_cachedEye = camera()->eye();
                     patchify();
@@ -320,7 +320,7 @@ void Painter::drawP(float extend, float x, float z, int level)
         }
     }
 
-    if(cornerCount == 2 || cornerCount == 3)
+    if(cornerCount == 2 )
     {
         int north = 0;
         int east = 0;
@@ -345,6 +345,31 @@ void Painter::drawP(float extend, float x, float z, int level)
                 else
                     north = 1;
         }
+        qDebug()<<north<<east<<south<<west;
+        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
+        return;
+    }
+    else if(cornerCount == 3)
+    {
+        int north = 0;
+        int east = 0;
+        int south = 0;
+        int west = 0;
+        bool reserved = false;
+
+        float xDistance = m_cachedEye.x() - x;
+        float zDistance = m_cachedEye.z() - z;
+
+        if(xDistance > 0)
+            west = 1;
+        else
+            east = 1;
+
+        if(zDistance > 0)
+            south = 1;
+        else
+            north = 1;
+
         qDebug()<<north<<east<<south<<west;
         m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
         return;
@@ -389,7 +414,7 @@ void Painter::patchify(
 //                                     |                |                |
 //                                   e |                |                |e
 //                                   x |                |                |x
-//                                   t B----------------C(x|z)-----------|t
+//                                   t B----------------C(x|z)-----------It
 //                                   e |                |                |e
 //                                   n |                |                |n
 //                                   d |                |                |d
@@ -397,26 +422,23 @@ void Painter::patchify(
 //                                     |                |                |
 //                                     |                |                |
 //                                     |                |                |
-//                                     E---------------------------------F
+//                                     E----------------H----------------F
 //                                                 <--extend-->
 
-    QPointF A =QPointF(x - extend/2, z - extend/2);
-    QPointF B =QPointF(x - extend/2, z);
-    QPointF C =QPointF(x, z);
-    QPointF D =QPointF(x, z - extend/2);
-    QPointF E =QPointF(x - extend/2, z + extend/2);
-    QPointF F =QPointF(x + extend/2, z + extend/2);
-    QPointF G =QPointF(x + extend/2, z - extend/2);
+    QPointF A = QPointF(x - extend/2, z - extend/2);
+    QPointF B = QPointF(x - extend/2, z);
+    QPointF C = QPointF(x, z);
+    QPointF D = QPointF(x, z - extend/2);
+    QPointF E = QPointF(x - extend/2, z + extend/2);
+    QPointF F = QPointF(x + extend/2, z + extend/2);
+    QPointF G = QPointF(x + extend/2, z - extend/2);
+    QPointF H = QPointF(x, z + extend/2);
+    QPointF I = QPointF(x + extend/2, z);
 
-//    qDebug()<<camera()->eye().x()<<" "<<camera()->eye().z()<<" - ("<<x<<" "<<z<<") - ("<<x + extend<<" "<<z + extend<<")";
-//    qDebug()<<camera()->eye().y();
-//    qDebug()<<levelFromDistance(camera()->eye().y() - height(camera()->eye().x(), camera()->eye().z()));
     QSizeF length = QSizeF(extend, extend);
     QPointF cameraPosition = QPointF(m_cachedEye.x(),  m_cachedEye.z());
     QRectF currentRect = QRectF(A, length);
 
-
-//    int cornerCount = 0;
     bool devide = false;
     QVector<QPointF> points;
 
@@ -494,7 +516,11 @@ int Painter::levelFromDistance(float distance)
 {
     if(distance > m_maximumDetail)
         return 0;
-    int level = std::round(m_maximumDetail - distance );
+    int level;
+    if(distance < 3.0f)
+        level = std::round(m_maximumDetail - distance*0.9);
+    else
+        level = std::round(m_maximumDetail) - distance;
 //    qDebug()<<distance<<" "<<level;
     return level;
 }
