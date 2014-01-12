@@ -80,7 +80,7 @@ bool Painter::initialize()
 
     m_normals = FileAssociatedTexture::getOrCreate2D("data/tree_canyon_n.png", *this);
     m_diffuse = FileAssociatedTexture::getOrCreate2D("data/tree_canyon_c.png", *this);
-    m_detail  = FileAssociatedTexture::getOrCreate2D("data/moss_detail.png",   *this, GL_REPEAT, GL_REPEAT);
+    m_detail  = FileAssociatedTexture::getOrCreate2D("data/moss_detail_c.png",   *this, GL_REPEAT, GL_REPEAT);
     m_detailn = FileAssociatedTexture::getOrCreate2D("data/moss_detail_n.png", *this, GL_REPEAT, GL_REPEAT);
     //m_detailc = FileAssociatedTexture::getOrCreate2D("data/moss-detail-c.png", *this, GL_REPEAT, GL_REPEAT);
 

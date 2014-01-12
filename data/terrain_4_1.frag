@@ -15,7 +15,7 @@ in vec3 v_eye;
 in float v_z;
 
 // you can use this light, e.g., as directional light
-const vec3 light = normalize(vec3(2.0, 1.0, 0.0));
+const vec3 light = normalize(vec3(2.0, 2.0, 0.0));
 
 void main()
 {
@@ -24,6 +24,7 @@ void main()
 	vec3 n = normalize(texture(normals, v_texc).xyz * 2.0 - 1.0);
 	vec3 d = texture(diffuse, v_texc).rgb;
 	vec3 detail = texture(detail, v_texc*100).rgb;
+    vec3 detailn = texture(detailn, v_texc*100).rgb;
 
     // Task_4_2 - ToDo Begin
 
@@ -39,8 +40,9 @@ void main()
 		// -> use e.g., the gl_FragCoord.z for this
 
 	// Task_4_2 - ToDo End
-
+	vec4 norm = mix(vec4(n, 1.0), vec4(detailn, 1.f), clamp(1/(pow(3, v_z)), 0.f, 0.5f));
 	fragColor = vec4(d, 1.0);
-	fragColor = mix(fragColor, vec4(detail, 1.f), clamp(1/(pow(3, v_z)) - 0.2, 0.f, 0.3f));
-	fragColor = mix(fragColor, clearColor, 1 - clamp(3.5/pow(2.1, v_z), 0.f, 1.f));
+	fragColor = mix(fragColor, vec4(detail, 1.f), clamp(1/(pow(3, v_z)) - 0.4, 0.f, 0.3f));
+	fragColor *= max(dot(vec4(light, 1.0f), norm), 0.0);
+    fragColor = mix(fragColor, clearColor, 1 - clamp(3.5/pow(2, v_z), 0.f, 1.f));
 }
