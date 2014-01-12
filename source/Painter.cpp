@@ -278,18 +278,6 @@ void Painter::patchify()
 bool Painter::cull(
     const QVector4D & v0)
 {
-    // Task_4_1 - ToDo Begin
-
-    // This function should return true, if the tile specified by vertices v0, v1, and v2
-    // is within the cameras view frustum.
-
-    // Hint: you might try to use NDCs and transfer the incomming verticies appropriatelly.
-    // With that in mind, it should be simpler to cull...
-
-    // If you like, make use of QVector3D, QVector4D (toVector3DAffine), QPolygonF (boundingRect), and QRectF (intersects)
-
-    // Task_4_1 - ToDo End
-
     QVector4D v0CSpace = camera()->viewProjection() * v0;
     v0CSpace /= v0CSpace.w();
 
@@ -331,7 +319,6 @@ void Painter::drawP(float extend, float x, float z, int level)
 
     if(!cullVal)
     {
-        qDebug()<<"not Drawing patch";
         m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 3, 3, 3, 3);
         return;
     }
@@ -350,6 +337,7 @@ void Painter::drawP(float extend, float x, float z, int level)
         }
     }
 
+    //pathces are identified by their number of corners in a specific distance "shell"
     if(cornerCount == 2 )
     {
         int north = 0;
@@ -426,11 +414,6 @@ void Painter::patchify(
         drawP(extend, x, z, level);
         return;
     }
-//    if(!m_debug)
-//    {
-//        m_cachedEye = camera()->eye();
-//        m_cachedEye.setY(m_cachedEye.y() - height(m_cachedEye.x(), m_cachedEye.z()));
-//    }
 
 //                                 x------>
 //                                z                <--extend-->
@@ -498,35 +481,6 @@ void Painter::patchify(
     {
         drawP(extend, x, z, level);
     }
-    // Use an ad-hoc or "static" approach where you decide to either
-    // subdivide the terrain patch and continue with the resulting
-    // children (2x2 or 4x4), or initiate a draw call of patch.
-    // For the draw call the LODs for all four tiles are required.
-    // For skipping a tile (e.g., because of culling), use LOD = 3.
-
-    // This functions signature suggest a recursive approach.
-    // Feel free to implement this in any way with as few or as much traversals
-    // /passes/recursions you need.
-
-    // Checkt out the paper "Seamless Patches for GPU-Based Terrain Rendering"
-
-    //if () // needs subdivide?
-    //{
-    //}
-    //else // draw patch!
-    //{
-    //    // check culling
-
-    //    //if (cull(.., .., ..))
-    //    //    xLOD = 3;
-    //    // ...
-
-//        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, bLOD, rLOD, tLOD, lLOD);
-
-
-    //}
-
-    // Task_4_1 - ToDo End
 }
 
 
@@ -545,11 +499,10 @@ int Painter::levelFromDistance(float distance)
     if(distance > m_maximumDetail)
         return 0;
     int level;
-    if(distance < 3.0f)
+    if(distance < m_maximumDetail/2)
         level = std::round(m_maximumDetail - distance*0.9);
     else
         level = std::round(m_maximumDetail) - distance;
-//    qDebug()<<distance<<" "<<level;
     return level;
 }
 

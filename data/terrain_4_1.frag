@@ -23,6 +23,7 @@ void main()
 	vec3 l = light;
 	vec3 n = normalize(texture(normals, v_texc).xyz * 2.0 - 1.0);
 	vec3 d = texture(diffuse, v_texc).rgb;
+	vec3 detail = texture(detail, v_texc*100).rgb;
 
     // Task_4_2 - ToDo Begin
 
@@ -40,5 +41,6 @@ void main()
 	// Task_4_2 - ToDo End
 
 	fragColor = vec4(d, 1.0);
-//	fragColor = mix(fragColor, clearColor, 1 - clamp(3.5/pow(2.1, v_z), 0.f, 1.f));
+	fragColor = mix(fragColor, vec4(detail, 1.f), clamp(1/(pow(3, v_z)) - 0.2, 0.f, 0.3f));
+	fragColor = mix(fragColor, clearColor, 1 - clamp(3.5/pow(2.1, v_z), 0.f, 1.f));
 }
