@@ -4,6 +4,7 @@ out vec4 fragColor;
 
 uniform mat4 view;
 uniform vec4 clearColor;
+uniform bool debug;
 
 uniform sampler2D normals;
 uniform sampler2D diffuse;
@@ -57,5 +58,6 @@ void main()
     fragColor += pow(fragColor, vec4(3));
 
     //fog of war
-    fragColor = mix(fragColor, clearColor, 1 - clamp(3.5/pow(1.7, v_z), 0.f, 1.f));
+    if(!debug)
+        fragColor = mix(fragColor, clearColor, 1 - clamp(3.5/pow(1.7, v_z), 0.f, 1.f));
 }

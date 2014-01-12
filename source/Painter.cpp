@@ -39,7 +39,7 @@ Painter::Painter()
 , m_level(0)
 , m_debug(false)
 , m_maximumDetail(6)
-, m_clearColor(0.6f, 0.8f, 0.94f, 1.f)
+, m_clearColor(0.8f, 0.8f, 0.8f, 1.f)
 {
     setMode(PaintMode0);
 }
@@ -208,6 +208,7 @@ void Painter::update(const QList<QOpenGLShaderProgram *> & programs)
                 program->setUniformValue("yScale",  m_yScale);
                 program->setUniformValue("yOffset", m_yOffset);
                 program->setUniformValue("clearColor", m_clearColor);
+                program->setUniformValue("debug", m_debug);
 
                 program->setUniformValue("height",  0);
                 program->setUniformValue("normals", 1);
@@ -278,6 +279,7 @@ void Painter::patchify()
 bool Painter::cull(
     const QVector4D & v0)
 {
+    return true;
     QVector4D v0CSpace = camera()->viewProjection() * v0;
     v0CSpace /= v0CSpace.w();
 
@@ -329,6 +331,7 @@ void Painter::drawP(float extend, float x, float z, int level)
 
     for(int i = 0; i < points.size(); i++)
     {
+//        distance = (m_cachedEye - QVector3D(points[i].x(), 0.f, points[i].y())).length()/extend;
         distance = (QVector2D(m_cachedEye.x(), m_cachedEye.z()) - QVector2D(points[i].x(), points[i].y())).length();
 
         if(distance < distanceFromLevel + (std::sqrt(pow(extend, 2)*2.0)))
@@ -460,8 +463,8 @@ void Painter::patchify(
 
     for(int i = 0; i < points.size() && !devide; i++)
     {
-//        if(level - 1 < levelFromDistance((QVector2D(m_cachedEye.x(), m_cachedEye.z()) - QVector2D(points[i].x(), points[i].y())).length()/extend))
-        if(level - 1 < levelFromDistance((m_cachedEye - QVector3D(points[i].x(), 0.f, points[i].y())).length()/extend))
+        if(level - 1 < levelFromDistance((QVector2D(m_cachedEye.x(), m_cachedEye.z()) - QVector2D(points[i].x(), points[i].y())).length()/extend))
+//        if(level - 1 < levelFromDistance((m_cachedEye - QVector3D(points[i].x(), 0.f, points[i].y())).length()/extend))
             devide = true;
     }
 
