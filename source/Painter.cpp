@@ -302,7 +302,7 @@ bool Painter::cull(
         return false;
 
     //Z Axis
-    if(v0CSpace.z() > camera()->zFar()*1.1 || v0CSpace.z() > 1.5f)
+    if(v0CSpace.z() > camera()->zFar()*1.1 || v0CSpace.z() > 1.0f)
         return false;
 
     return true;
@@ -325,7 +325,7 @@ void Painter::drawP(float extend, float x, float z, int level)
 
     for(int i = 0; i < points.size(); i++)
     {
-        if(cull(QVector4D(points[i].x(), 0.f, A.y(), 1.f)))
+        if(cull(QVector4D(points[i].x(), height(points[i].x(), points[i].y()), points[i].y(), 1.f)))
             cullVal = true;
     }
 
