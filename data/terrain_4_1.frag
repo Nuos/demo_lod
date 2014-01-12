@@ -45,7 +45,7 @@ void main()
 	fragColor = vec4(d, 1.0);
 
 	//details
-	fragColor = mix(fragColor, vec4(detail, 1.f), clamp(1/(pow(v_z, 3)) - 0.4, 0.f, 0.3f));
+	fragColor = mix(fragColor, vec4(detail, 1.f), clamp(1/(pow(v_z, 2)) - 2.0, 0.f, 0.3f));
 
 	//normals and light
 	fragColor *= max(dot(vec4(light, 1.0f), norm), 0.0);

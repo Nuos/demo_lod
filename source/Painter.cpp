@@ -74,12 +74,15 @@ bool Painter::initialize()
     // the Tree Canyon Terrain or the complete Terrain Pack. Feel free to modify/exchange the data and extends/scales/offsets.
 
     m_height = FileAssociatedTexture::getOrCreate2Dus16("data/tree_canyon_h.raw", 2048, 2048, *this, &m_heights);
+//    m_height = FileAssociatedTexture::getOrCreate2Dus16("data/terrain/overgrowth-terrains/sea_cliffs_h.raw", 2048, 2048, *this, &m_heights);
 //    m_yOffset = -1.f;
     m_yOffset = -2.f;
     m_yScale  =  3.f;
 
     m_normals = FileAssociatedTexture::getOrCreate2D("data/tree_canyon_n.png", *this);
     m_diffuse = FileAssociatedTexture::getOrCreate2D("data/tree_canyon_c.png", *this);
+//    m_normals = FileAssociatedTexture::getOrCreate2D("data/terrain/overgrowth-terrains/sea_cliffs_sean.png", *this);
+//    m_diffuse = FileAssociatedTexture::getOrCreate2D("data/terrain/overgrowth-terrains/sea_cliffs_c.png", *this);
     m_detail  = FileAssociatedTexture::getOrCreate2D("data/moss_detail_c.png",   *this, GL_REPEAT, GL_REPEAT);
     m_detailn = FileAssociatedTexture::getOrCreate2D("data/moss_detail_n.png", *this, GL_REPEAT, GL_REPEAT);
     //m_detailc = FileAssociatedTexture::getOrCreate2D("data/moss-detail-c.png", *this, GL_REPEAT, GL_REPEAT);
@@ -279,7 +282,6 @@ void Painter::patchify()
 bool Painter::cull(
     const QVector4D & v0)
 {
-    return true;
     QVector4D v0CSpace = camera()->viewProjection() * v0;
     v0CSpace /= v0CSpace.w();
 
