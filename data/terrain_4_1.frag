@@ -42,8 +42,16 @@ void main()
 	// Task_4_2 - ToDo End
 	vec4 norm = mix(vec4(n, 1.0), vec4(detailn, 1.f), clamp(1/(pow(3, v_z)), 0.f, 0.5f));
 	fragColor = vec4(d, 1.0);
+
+	//details
 	fragColor = mix(fragColor, vec4(detail, 1.f), clamp(1/(pow(3, v_z)) - 0.4, 0.f, 0.3f));
+
+	//normals and light
 	fragColor *= max(dot(vec4(light, 1.0f), norm), 0.0);
+
+	//normal highlights
     fragColor += vec4(max(dFdy(n).r, dFdx(norm).r));
+
+    //fog of war
     fragColor = mix(fragColor, clearColor, 1 - clamp(3.5/pow(2, v_z), 0.f, 1.f));
 }
