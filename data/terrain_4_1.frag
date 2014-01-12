@@ -3,6 +3,7 @@
 out vec4 fragColor;
 
 uniform mat4 view;
+uniform vec4 clearColor;
 
 uniform sampler2D normals;
 uniform sampler2D diffuse;
@@ -11,6 +12,7 @@ uniform sampler2D detailn;
 
 in vec2 v_texc;
 in vec3 v_eye;
+in float v_z;
 
 // you can use this light, e.g., as directional light
 const vec3 light = normalize(vec3(2.0, 1.0, 0.0));
@@ -38,4 +40,5 @@ void main()
 	// Task_4_2 - ToDo End
 
 	fragColor = vec4(d, 1.0);
+	fragColor = mix(fragColor, clearColor, 1 - clamp(3.5/pow(2.1, v_z), 0.f, 1.f));
 }

@@ -39,6 +39,7 @@ Painter::Painter()
 , m_level(0)
 , m_debug(false)
 , m_maximumDetail(6)
+, m_clearColor(0.6f, 0.8f, 0.94f, 1.f)
 {
     setMode(PaintMode0);
 }
@@ -95,7 +96,7 @@ bool Painter::initialize()
 
     // Task_4_1 - ToDo End
 
-    glClearColor(0.6f, 0.8f, 0.94f, 1.f);
+    glClearColor(m_clearColor.x(), m_clearColor.y(), m_clearColor.z(), m_clearColor.w());
 
     return true;
 }
@@ -206,6 +207,7 @@ void Painter::update(const QList<QOpenGLShaderProgram *> & programs)
 
                 program->setUniformValue("yScale",  m_yScale);
                 program->setUniformValue("yOffset", m_yOffset);
+                program->setUniformValue("clearColor", m_clearColor);
 
                 program->setUniformValue("height",  0);
                 program->setUniformValue("normals", 1);
@@ -345,7 +347,6 @@ void Painter::drawP(float extend, float x, float z, int level)
                 else
                     north = 1;
         }
-        qDebug()<<north<<east<<south<<west;
         m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
         return;
     }
@@ -370,7 +371,6 @@ void Painter::drawP(float extend, float x, float z, int level)
         else
             north = 1;
 
-        qDebug()<<north<<east<<south<<west;
         m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, north, east, south, west);
         return;
     }

@@ -106,4 +106,5 @@ protected:
     int m_level;
     QVector3D m_cachedEye;
     QVector3D m_cameraPos;
+    QVector4D m_clearColor;
 };

@@ -18,6 +18,7 @@ in vec2 a_vertex;
 out vec2 v_texc;
 out vec3 v_eye;
 out vec3 v_light;
+out float v_z;
 
 void main()
 {
@@ -28,4 +29,5 @@ void main()
 
 	v_eye = v.xyz;
 	gl_Position = mvp * v;
+    v_z = gl_Position.z;
 }
