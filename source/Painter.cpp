@@ -463,8 +463,9 @@ void Painter::patchify(
 
     for(int i = 0; i < points.size() && !devide; i++)
     {
-        if(level - 1 < levelFromDistance((QVector2D(m_cachedEye.x(), m_cachedEye.z()) - QVector2D(points[i].x(), points[i].y())).length()/extend))
-//        if(level - 1 < levelFromDistance((m_cachedEye - QVector3D(points[i].x(), 0.f, points[i].y())).length()/extend))
+//        int targetLevel = levelFromDistance((m_cachedEye - QVector3D(points[i].x(), 0.f, points[i].y())).length()/extend);
+        int targetLevel = levelFromDistance((QVector2D(m_cachedEye.x(), m_cachedEye.z()) - QVector2D(points[i].x(), points[i].y())).length()/extend);
+        if(level - 1 < targetLevel)
             devide = true;
     }
 
