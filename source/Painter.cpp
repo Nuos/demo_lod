@@ -276,9 +276,7 @@ void Painter::patchify()
 }
 
 bool Painter::cull(
-    const QVector4D & v0
-,   const QVector4D & v1
-,   const QVector4D & v2)
+    const QVector4D & v0)
 {
     // Task_4_1 - ToDo Begin
 
@@ -292,7 +290,22 @@ bool Painter::cull(
 
     // Task_4_1 - ToDo End
 
-    return false;
+    QVector4D v0CSpace = camera()->viewProjection() * v0;
+    v0CSpace /= v0CSpace.w();
+
+    //X Axis
+    if(v0CSpace.x() < -1.5f || v0CSpace.x() > 1.5)
+        return false;
+
+    //X Axis
+    if(v0CSpace.y() < -1.5f || v0CSpace.y() > 1.5)
+        return false;
+
+    //Z Axis
+    if(v0CSpace.z() > camera()->zFar()*1.1 || v0CSpace.z() > 1.5f)
+        return false;
+
+    return true;
 }
 
 void Painter::drawP(float extend, float x, float z, int level)
@@ -302,15 +315,30 @@ void Painter::drawP(float extend, float x, float z, int level)
     QPointF F = QPointF(x + extend/2, z + extend/2);
     QPointF G = QPointF(x + extend/2, z - extend/2);
 
-    int cornerCount = 0;
-    float distance;
-    float distanceFromLevel = (level - m_maximumDetail)*-1;
     QVector<QPointF> points;
-
     points.append(A);
     points.append(E);
     points.append(F);
     points.append(G);
+
+    bool cullVal = false;
+
+    for(int i = 0; i < points.size(); i++)
+    {
+        if(cull(QVector4D(points[i].x(), 0.f, A.y(), 1.f)))
+            cullVal = true;
+    }
+
+    if(!cullVal)
+    {
+        qDebug()<<"not Drawing patch";
+        m_terrain->drawPatch(QVector3D(x, 0.0, z), extend, 3, 3, 3, 3);
+        return;
+    }
+
+    int cornerCount = 0;
+    float distance;
+    float distanceFromLevel = (level - m_maximumDetail)*-1;
 
     for(int i = 0; i < points.size(); i++)
     {

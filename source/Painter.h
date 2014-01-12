@@ -69,9 +69,7 @@ protected:
     ,   const float z) const;
     int levelFromDistance(float distance);
     bool cull(
-        const QVector4D & v0
-    ,   const QVector4D & v1
-    ,   const QVector4D & v2);
+        const QVector4D & v0);
 
     // ...
 
